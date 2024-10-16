@@ -13,6 +13,14 @@ Use either httpie or curl and target localhost ie.:
 `http get localhost:8080/ping`
 `curl -V GET localhost:8080/ping`
 
+Valid routes are:
+/ping
+/v1/chargers/{id}
+/v1/top-consumers
+
+{id} is a number from 1-3
+
+
 ## How to test 
 $ go test ./... -count 1 -short
 
@@ -28,4 +36,4 @@ Done in ~1 hour since I don't principally allow myself to allocate more time for
 I started doing a PostgresQL/Docker implementation, but I didn't have time to finish it, so ended up with a cache/in-memory implementation.
 No AI used - not that I won't use it in my day-to-day, but for the purpose of showing my thinking.
 
-
+Some "panic"s in there, but do note I never use them unless something truly is unrecoverable.

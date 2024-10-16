@@ -4,7 +4,6 @@ import (
 	"blixenkrone/spirii/internal/chargers"
 	"blixenkrone/spirii/server/http"
 	"context"
-	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -13,7 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -40,12 +38,14 @@ type app struct {
 	consumer eventbus
 }
 
-type fakeConsumer struct {
+type fakeEventBus struct {
 	interval time.Duration
 	data     chan chargers.MeterReading
+	database memoryReadWriter[chargers.MeterReading]
+	logger   *logrus.Logger
 }
 
-func (f fakeConsumer) produce(ctx context.Context, data any) error {
+func (f fakeEventBus) produce(ctx context.Context, data any) error {
 	t := time.NewTicker(time.Second * f.interval)
 	count := 0
 	rand.Seed(time.Now().UnixNano())
@@ -54,7 +54,6 @@ func (f fakeConsumer) produce(ctx context.Context, data any) error {
 		select {
 		case t := <-t.C:
 			count++
-			fmt.Println("reading", t.String())
 			f.data <- chargers.MeterReading{
 				Timestamp:       t,
 				MeterID:         strconv.Itoa(count),
@@ -67,23 +66,28 @@ func (f fakeConsumer) produce(ctx context.Context, data any) error {
 	}
 }
 
-func (f fakeConsumer) consume(ctx context.Context) error {
+func (f fakeEventBus) consume(ctx context.Context) error {
 	for v := range f.data {
-		spew.Dump(v)
+		f.logger.Println("reading", v.MeterID)
+		if err := f.database.Write(ctx, v); err != nil {
+			f.logger.Errorln(err)
+			continue // TODO: error handling
+		}
+		f.logger.Infof("stored reading for %s", v.MeterID)
 	}
 	return nil
 }
 
-func (f fakeConsumer) start(ctx context.Context, done chan os.Signal) {
+func (f fakeEventBus) start(ctx context.Context, done chan os.Signal) {
 	go func() {
 		f.produce(ctx, done)
 	}()
 	go func() {
 		f.consume(ctx)
 	}()
-	fmt.Println("started consumer")
+	f.logger.Println("started consumer")
 	<-done
-	fmt.Println("stopped consumer")
+	f.logger.Println("stopped consumer")
 }
 
 func (a app) Start() error {
@@ -116,15 +120,15 @@ func (a app) Start() error {
 func main() {
 	l := logrus.New()
 
+	chargersDB := chargers.NewChargersDB()
 	dataCh := make(chan chargers.MeterReading)
-	f := fakeConsumer{interval: 1, data: dataCh}
+	f := fakeEventBus{interval: 1, data: dataCh, database: chargersDB, logger: l}
 
-	fooDB := chargers.NewChargersDB()
-	srv := http.NewServer(l, ":8080", fooDB)
+	srv := http.NewServer(l, ":8080", chargersDB)
 
 	app := app{
 		server:   srv,
-		db:       fooDB,
+		db:       chargersDB,
 		consumer: f,
 	}
 

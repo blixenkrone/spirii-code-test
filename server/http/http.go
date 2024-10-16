@@ -43,7 +43,6 @@ func NewServer(l logrus.FieldLogger, addr string, db storage.TableProjectionRead
 	return s
 }
 
-// TODO: improve loggerMW with better logging
 func (s Server) loggerMW(h http.HandlerFunc) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		s.logger.Infof("calling %s w method %s", r.URL, r.Method)
@@ -57,10 +56,8 @@ func (s Server) registerRoutes(fh *mux.Router) {
 		method string
 	}{
 		"/ping":             {s.pong(), http.MethodGet},
-		"/v1/chargers/{id}": {s.getchargersV1(), http.MethodGet},
-		"/v1/chargers":      {s.postchargersV1(), http.MethodPost},
-		// "/v2/chargers/{id}": {s.getchargersV2(), http.MethodGet},
-		// "/v2/chargers":      {s.postchargersV2(), http.MethodPost},
+		"/v1/chargers/{id}": {s.getMeterDataV1(), http.MethodGet},
+		"/v1/top-consumers": {s.getTopConsumersV1(), http.MethodGet},
 	}
 	for k, v := range routes {
 		v.fn = s.loggerMW(v.fn)
@@ -88,9 +85,9 @@ func (s Server) getAuth() http.HandlerFunc {
 	}
 }
 
-func (s Server) getchargersV1() http.HandlerFunc {
+func (s Server) getMeterDataV1() http.HandlerFunc {
 	type response struct {
-		charger chargers.MeterReading
+		Charger chargers.MeterReading
 	}
 	return func(rw http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
@@ -111,7 +108,7 @@ func (s Server) getchargersV1() http.HandlerFunc {
 		}
 
 		resp := response{
-			charger: rec,
+			Charger: rec,
 		}
 
 		if err := json.NewEncoder(rw).Encode(&resp); err != nil {
@@ -120,37 +117,27 @@ func (s Server) getchargersV1() http.HandlerFunc {
 	}
 }
 
-func (s Server) postchargersV1() http.HandlerFunc {
-	type request struct {
-		ID    string `json:"id"`
-		Value string `json:"value"`
+func (s Server) getTopConsumersV1() http.HandlerFunc {
+	type response struct {
+		Charger []chargers.MeterReading
 	}
-	validateBodyFn := func(r request) error {
-		if r.ID == "" || r.Value == "" {
-			return errors.New("bad body values")
-		}
-		return nil
-	}
-	return func(w http.ResponseWriter, r *http.Request) {
-		var body request
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+	return func(rw http.ResponseWriter, r *http.Request) {
+		rec, err := s.memDB.(*chargers.FooDB).TopConsumers(r.Context())
+		if err != nil {
+			if errors.Is(err, chargers.ErrRecordNotFound) {
+				http.Error(rw, err.Error(), http.StatusNotFound)
+				return
+			}
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		if err := validateBodyFn(body); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+		resp := response{
+			Charger: rec,
 		}
 
-		if err := s.memDB.Write(r.Context(), chargers.MeterReading{
-			// ID:    body.ID,
-			// Value: body.Value,
-		}); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		if err := json.NewEncoder(rw).Encode(&resp); err != nil {
+			panic(err)
 		}
-		w.WriteHeader(http.StatusAccepted)
-
 	}
 }

@@ -120,7 +120,7 @@ func (s Server) getMeterDataV1() http.HandlerFunc {
 
 func (s Server) getTopConsumersV1() http.HandlerFunc {
 	type response struct {
-		Charger []chargers.MeterReading `json: "chargers"`
+		Charger []chargers.MeterReading `json:"chargers"`
 	}
 	return func(rw http.ResponseWriter, r *http.Request) {
 		rec, err := s.memDB.(*chargers.FooDB).TopConsumers(r.Context())

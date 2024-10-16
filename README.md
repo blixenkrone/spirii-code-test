@@ -15,11 +15,14 @@ Run the docker image provided:
 Use either httpie or curl and target localhost ie.:
 
 `http get localhost:8080/ping`
+
 `curl -V GET localhost:8080/ping`
 
 Valid routes are:
 `/ping`
+
 `/v1/chargers/{id}``
+
 `/v1/top-consumers`
 
 {id} is a number from 1-3

@@ -7,8 +7,8 @@ or
 
 Run the docker image provided:
 
-$ docker build --pull --rm -f "Dockerfile" -t blixenkrone/spirii:latest .
-$ docker run --rm -d -p 8080:8080 blixenkrone/spirii:latest
+`$ docker build --pull --rm -f "Dockerfile" -t blixenkrone/spirii:latest .`
+`$ docker run --rm -d -p 8080:8080 blixenkrone/spirii:latest`
 
 ## How to hit endpoints
 Use either httpie or curl and target localhost ie.:
@@ -17,9 +17,9 @@ Use either httpie or curl and target localhost ie.:
 `curl -V GET localhost:8080/ping`
 
 Valid routes are:
-/ping
-/v1/chargers/{id}
-/v1/top-consumers
+`/ping`
+`/v1/chargers/{id}``
+`/v1/top-consumers`
 
 {id} is a number from 1-3
 

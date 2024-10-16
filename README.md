@@ -3,11 +3,29 @@
 ## How to run
 $ go run ./cmd/main.go
 
+or
+
+Run the docker image provided
+
+## How to hit endpoints
+Use either httpie or curl and target localhost ie.:
+
+`http get localhost:8080/ping`
+`curl -V GET localhost:8080/ping`
 
 ## How to test 
 $ go test ./... -count 1 -short
 
+## How to stop
+Just sig kill it (once for soft, twice for force)
 
 ## Notes
-Done in less than 1 hour since I don't principally allow myself to allocate more time for unpaid coding tests.
+Focus was put on concurrent data streams, HTTP API and tests.
+Error handling and logging is pretty standard.
+I didn't find the API design quite RESTful, so I only implemented the first route.
+
+Done in ~1 hour since I don't principally allow myself to allocate more time for unpaid coding tests.
+I started doing a PostgresQL/Docker implementation, but I didn't have time to finish it, so ended up with a cache/in-memory implementation.
 No AI used - not that I won't use it in my day-to-day, but for the purpose of showing my thinking.
+
+

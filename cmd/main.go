@@ -43,7 +43,6 @@ type app struct {
 type fakeConsumer struct {
 	interval time.Duration
 	data     chan chargers.MeterReading
-	done     chan struct{}
 }
 
 func (f fakeConsumer) produce(ctx context.Context, data any) error {
@@ -72,7 +71,6 @@ func (f fakeConsumer) consume(ctx context.Context) error {
 	for v := range f.data {
 		spew.Dump(v)
 	}
-	close(f.done)
 	return nil
 }
 
@@ -83,10 +81,9 @@ func (f fakeConsumer) start(ctx context.Context, done chan os.Signal) {
 	go func() {
 		f.consume(ctx)
 	}()
+	fmt.Println("started consumer")
 	<-done
-	// cancel()
-	// time.Sleep(time.Second * 5)
-
+	fmt.Println("stopped consumer")
 }
 
 func (a app) Start() error {

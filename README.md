@@ -8,6 +8,7 @@ or
 Run the docker image provided:
 
 `$ docker build --pull --rm -f "Dockerfile" -t blixenkrone/spirii:latest .`
+
 `$ docker run --rm -d -p 8080:8080 blixenkrone/spirii:latest`
 
 ## How to hit endpoints

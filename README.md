@@ -42,3 +42,4 @@ I started doing a PostgresQL/Docker implementation, but I didn't have time to fi
 No AI used - not that I won't use it in my day-to-day, but for the purpose of showing my thinking.
 
 Some "panic"s in there, but do note I never use them unless something truly is unrecoverable.
+Git commit logs are not reflective of how I usually work.

@@ -111,6 +111,7 @@ func (s Server) getMeterDataV1() http.HandlerFunc {
 			Charger: rec,
 		}
 
+		rw.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(rw).Encode(&resp); err != nil {
 			panic(err)
 		}
@@ -136,6 +137,7 @@ func (s Server) getTopConsumersV1() http.HandlerFunc {
 			Charger: rec,
 		}
 
+		rw.Header().Add("Content-Type", "application/json")
 		if err := json.NewEncoder(rw).Encode(&resp); err != nil {
 			panic(err)
 		}

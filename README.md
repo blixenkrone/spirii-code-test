@@ -21,11 +21,10 @@ Use either httpie or curl and target localhost ie.:
 Valid routes are:
 `/ping`
 
-`/v1/chargers/{id}``
+`/v1/chargers/{id}` // {id} is a number from 1-3
 
 `/v1/top-consumers`
 
-{id} is a number from 1-3
 
 
 ## How to test 

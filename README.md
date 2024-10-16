@@ -1,11 +1,10 @@
 ## Spirii code challenge
 
 ## How to run
-$ go run ./cmd/main.go
+`$ go run ./cmd/main.go`
 
 or
 
-Run the docker image provided:
 
 `$ docker build --pull --rm -f "Dockerfile" -t blixenkrone/spirii:latest .`
 

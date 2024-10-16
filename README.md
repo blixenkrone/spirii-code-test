@@ -5,7 +5,10 @@ $ go run ./cmd/main.go
 
 or
 
-Run the docker image provided
+Run the docker image provided:
+
+$ docker build --pull --rm -f "Dockerfile" -t blixenkrone/spirii:latest .
+$ docker run --rm -d -p 8080:8080 blixenkrone/spirii:latest
 
 ## How to hit endpoints
 Use either httpie or curl and target localhost ie.:
